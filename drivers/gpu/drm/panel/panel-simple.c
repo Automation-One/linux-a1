@@ -512,6 +512,31 @@ static void panel_simple_shutdown(struct device *dev)
 	panel_simple_unprepare(&panel->base);
 }
 
+static const struct drm_display_mode admatec_t043c004800272t2a_mode = {
+	.clock = 9200,
+	.hdisplay = 480,
+	.hsync_start = 480 + 40,
+	.hsync_end = 480 + 40 + 20,
+	.htotal = 480 + 40 + 20 + 60,
+	.vdisplay = 272,
+	.vsync_start = 272 + 10,
+	.vsync_end = 272 + 10 + 10,
+	.vtotal = 272 + 10 + 10 + 10,
+	.vrefresh = 60,
+};
+
+static const struct panel_desc admatec_t043c004800272t2a = {
+	.modes = &admatec_t043c004800272t2a_mode,
+	.num_modes = 1,
+	.bpc = 8,
+	.size = {
+		.width = 95,
+		.height = 54,
+	},
+	.bus_format = MEDIA_BUS_FMT_RGB888_1X24,
+	.bus_flags = DRM_BUS_FLAG_DE_HIGH | DRM_BUS_FLAG_PIXDATA_POSEDGE,
+};
+
 static const struct drm_display_mode ampire_am_480272h3tmqw_t01h_mode = {
 	.clock = 9000,
 	.hdisplay = 480,
@@ -3076,6 +3101,9 @@ static const struct panel_desc arm_rtsm = {
 
 static const struct of_device_id platform_of_match[] = {
 	{
+		.compatible = "admatec,t043c004800272t2a",
+		.data = &admatec_t043c004800272t2a,
+	}, {
 		.compatible = "ampire,am-480272h3tmqw-t01h",
 		.data = &ampire_am_480272h3tmqw_t01h,
 	}, {
