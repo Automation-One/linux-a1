@@ -512,6 +512,32 @@ static void panel_simple_shutdown(struct device *dev)
 	panel_simple_unprepare(&panel->base);
 }
 
+static const struct drm_display_mode admatec_t070p133t0s301_mode = {
+	.clock = 37000,
+	.hdisplay = 800,
+	.hsync_start = 800 + 327,
+	.hsync_end =  800  + 327 + 1,
+	.htotal = 800 + 48 + 327 + 1,
+	.vdisplay = 480,
+	.vsync_start = 480 + 25,
+	.vsync_end = 480 + 25 + 1,
+	.vtotal = 480 + 20 + 25 + 1,
+	.vrefresh = 60,
+	.flags = DRM_MODE_FLAG_PHSYNC | DRM_MODE_FLAG_PVSYNC,
+};
+
+static const struct panel_desc admatec_t070p133t0s301 = {
+	.modes = &admatec_t070p133t0s301_mode,
+	.num_modes = 1,
+	.bpc = 8,
+	.size = {
+		.width = 95,
+		.height = 54,
+	},
+	.bus_format = MEDIA_BUS_FMT_RGB888_1X24,
+	.bus_flags = DRM_BUS_FLAG_DE_HIGH | DRM_BUS_FLAG_PIXDATA_POSEDGE,
+};
+
 static const struct drm_display_mode admatec_t043c004800272t2a_mode = {
 	.clock = 9200,
 	.hdisplay = 480,
@@ -3101,6 +3127,9 @@ static const struct panel_desc arm_rtsm = {
 
 static const struct of_device_id platform_of_match[] = {
 	{
+		.compatible = "admatec,t070p133t0s301",
+		.data = &admatec_t070p133t0s301,
+	}, {
 		.compatible = "admatec,t043c004800272t2a",
 		.data = &admatec_t043c004800272t2a,
 	}, {
