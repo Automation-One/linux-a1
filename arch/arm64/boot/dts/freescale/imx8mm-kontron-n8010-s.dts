@@ -6,9 +6,13 @@
 /dts-v1/;
 
 #include "imx8mm-kontron-n8010-som.dtsi"
-#include "imx8mm-kontron-n801x-s.dtsi"
+#include "imx8mm-kontron-n8010-s.dtsi"
 
 / {
 	model = "Kontron i.MX8MM N8010 S";
 	compatible = "kontron,imx8mm-n8010-s", "fsl,imx8mm";
+};
+
+&usdhc2 {
+	vqmmc-supply = <&nvcc_sd>;
 };
