@@ -9109,6 +9109,12 @@ F:	include/linux/kmod.h
 F:	lib/test_kmod.c
 F:	tools/testing/selftests/kmod/
 
+KONTRON ELECTRONICS ARM BOARDS SUPPORT
+M:	Frieder Schrempf <frieder.schrempf@kontron.de>
+S:	Maintained
+F:	arch/arm/boot/dts/imx6ul-kontron-*
+F:	arch/arm/boot/dts/imx6ull-kontron-*
+
 KPROBES
 M:	Naveen N. Rao <naveen.n.rao@linux.ibm.com>
 M:	Anil S Keshavamurthy <anil.s.keshavamurthy@intel.com>
