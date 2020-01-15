@@ -91,6 +91,7 @@ static struct cpuidle_driver imx6sx_cpuidle_driver = {
 			.enter = imx6sx_enter_wait,
 			.name = "LOW-POWER-IDLE",
 			.desc = "ARM power off",
+			.preset_disabled = 1,
 		},
 	},
 	.state_count = 3,

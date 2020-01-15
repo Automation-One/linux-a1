@@ -701,6 +701,7 @@ int cpuidle_register(struct cpuidle_driver *drv,
 	}
 
 	for_each_cpu(cpu, drv->cpumask) {
+		int i;
 		device = &per_cpu(cpuidle_dev, cpu);
 		device->cpu = cpu;
 
@@ -713,9 +714,14 @@ int cpuidle_register(struct cpuidle_driver *drv,
 		if (coupled_cpus)
 			device->coupled_cpus = *coupled_cpus;
 #endif
+
 		ret = cpuidle_register_device(device);
-		if (!ret)
+		if (!ret){
+			for (i = 1; i < drv->state_count; i++) {
+				device->states_usage[i].disable = drv->states[i].preset_disabled;
+			}
 			continue;
+		}
 
 		pr_err("Failed to register cpuidle device for cpu%d\n", cpu);
 
