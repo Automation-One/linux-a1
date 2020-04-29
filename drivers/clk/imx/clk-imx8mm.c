@@ -651,17 +651,6 @@ static int __init imx8mm_clocks_init(struct device_node *ccm_node)
 
 	imx_register_uart_clocks(uart_clks);
 
-	/* 
-	 * HACK: There's currently no driver to enable these clocks
-	 * properly or they are enabled too late?!
-	 * As we want to use the GPU we implement this hack
-	 * until there's a proper driver available upstream.
-	 */
-	clk_prepare_enable(clks[IMX8MM_CLK_GPU_BUS_ROOT]);
-	clk_prepare_enable(clks[IMX8MM_CLK_GPU_AHB]);
-	clk_prepare_enable(clks[IMX8MM_CLK_GPU2D_ROOT]);
-	clk_prepare_enable(clks[IMX8MM_CLK_GPU3D_ROOT]);
-
 	return 0;
 
 unregister_clks:
