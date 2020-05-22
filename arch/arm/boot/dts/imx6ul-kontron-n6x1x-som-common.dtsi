@@ -20,9 +20,16 @@
 	status = "okay";
 
 	spi-flash@0 {
+        #address-cells = <1>;
+		#size-cells = <1>;
 		compatible = "mxicy,mx25v8035f", "jedec,spi-nor";
 		spi-max-frequency = <50000000>;
 		reg = <0>;
+
+		partition@0 {
+			label = "u-boot-env";
+			reg = <0x00000000 0x00100000>;
+		};
 	};
 };
 
