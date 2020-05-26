@@ -14,3 +14,12 @@
 	compatible = "kontron,imx6ull-n6411-s", "kontron,imx6ull-n6411-som",
 		     "fsl,imx6ull";
 };
+
+&uart3 {
+      pinctrl-names = "default";
+      pinctrl-0 = <&pinctrl_uart3>;
+      linux,rs485-enabled-at-boot-time;
+      rs485-rx-during-tx;
+      uart-has-rtscts;
+      status = "okay";
+};
