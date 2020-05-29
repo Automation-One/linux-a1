@@ -28,13 +28,8 @@
 		reg = <0>;
 
 		partition@0 {
-			label = "ubi1";
-			reg = <0x00000000 0x08000000>;
-		};
-
-		partition@8000000 {
-			label = "ubi2";
-			reg = <0x08000000 0x18000000>;
+			label = "spi-nand0";
+			reg = <0x00000000 0x20000000>;
 		};
 	};
 };
