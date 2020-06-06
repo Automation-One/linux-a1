@@ -1456,6 +1456,13 @@ static int spi_imx_pio_transfer(struct spi_device *spi,
 		return -ETIMEDOUT;
 	}
 
+	if (transfer->rx_sg.sgl) {
+		struct device *rx_dev = spi->controller->dma_rx->device->dev;
+
+		dma_sync_sg_for_device(rx_dev, transfer->rx_sg.sgl,
+				       transfer->rx_sg.nents, DMA_TO_DEVICE);
+	}
+
 	return transfer->len;
 }
 
@@ -1521,9 +1528,14 @@ static int spi_imx_transfer(struct spi_device *spi,
 	 * firmware may not be updated as ERR009165 required.
 	 */
 	if (spi_imx->usedma) {
+		struct device *tx_dev = spi->controller->dma_tx->device->dev;
+
 		ret = spi_imx_dma_transfer(spi_imx, transfer);
 		if (ret != -EINVAL)
 			return ret;
+
+		dma_sync_sg_for_cpu(tx_dev, transfer->tx_sg.sgl,
+				    transfer->tx_sg.nents, DMA_FROM_DEVICE);
 
 		spi_imx->devtype_data->disable_dma(spi_imx);
 
