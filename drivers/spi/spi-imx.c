@@ -269,6 +269,7 @@ static bool spi_imx_can_dma(struct spi_master *master, struct spi_device *spi,
 #define MX51_ECSPI_CONFIG_SCLKPOL(cs)	(1 << ((cs) +  4))
 #define MX51_ECSPI_CONFIG_SBBCTRL(cs)	(1 << ((cs) +  8))
 #define MX51_ECSPI_CONFIG_SSBPOL(cs)	(1 << ((cs) + 12))
+#define MX51_ECSPI_CONFIG_DATCTRL(cs)	(1 << ((cs) + 16))
 #define MX51_ECSPI_CONFIG_SCLKCTL(cs)	(1 << ((cs) + 20))
 
 #define MX51_ECSPI_INT		0x10
@@ -515,6 +516,7 @@ static int mx51_ecspi_prepare_message(struct spi_imx_data *spi_imx,
 				      struct spi_message *msg)
 {
 	struct spi_device *spi = msg->spi;
+	struct device_node *np = spi->dev.of_node;
 	u32 ctrl = MX51_ECSPI_CTRL_ENABLE;
 	u32 testreg;
 	u32 cfg = readl(spi_imx->base + MX51_ECSPI_CONFIG);
@@ -574,6 +576,9 @@ static int mx51_ecspi_prepare_message(struct spi_imx_data *spi_imx,
 		cfg |= MX51_ECSPI_CONFIG_SSBPOL(spi->chip_select);
 	else
 		cfg &= ~MX51_ECSPI_CONFIG_SSBPOL(spi->chip_select);
+
+	if (of_property_read_bool(np, "fsl,spi-data-idle-low"))
+		cfg |= MX51_ECSPI_CONFIG_DATCTRL(spi->chip_select);
 
 	writel(cfg, spi_imx->base + MX51_ECSPI_CONFIG);
 
