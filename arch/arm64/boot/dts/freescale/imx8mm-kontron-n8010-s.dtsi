@@ -63,6 +63,8 @@
 		pinctrl-names = "default";
 		pinctrl-0 = <&pinctrl_usb_eth2>;
 		gpio = <&gpio3 2 GPIO_ACTIVE_LOW>;
+		enable-active-high;
+		regulator-always-on;
 		status = "okay";
 	};
 
@@ -90,6 +92,8 @@
 		pinctrl-names = "default";
 		pinctrl-0 = <&pinctrl_dsi_sel>;
 		gpio = <&gpio4 14 GPIO_ACTIVE_LOW>;
+		enable-active-high;
+		regulator-always-on;
 		status = "okay";
 	};
 
