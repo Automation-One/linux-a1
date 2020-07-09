@@ -71,7 +71,6 @@
 		regulator-name = "vdd_24v";
 		regulator-min-microvolt = <24000000>;
 		regulator-max-microvolt = <24000000>;
-		regulator-boot-on;
 		regulator-always-on;
 		status = "okay";
 	};
@@ -81,7 +80,6 @@
 		regulator-name = "vdd_5v";
 		regulator-min-microvolt = <5000000>;
 		regulator-max-microvolt = <5000000>;
-		regulator-boot-on;
 		regulator-always-on;
 		status = "okay";
 	};
@@ -101,7 +99,6 @@
 		pinctrl-names = "default";
 		pinctrl-0 = <&pinctrl_dsi_oe>;
 		gpio = <&gpio4 15 GPIO_ACTIVE_LOW>;
-		regulator-boot-on;
 		regulator-always-on;
 		status = "okay";
 	};
