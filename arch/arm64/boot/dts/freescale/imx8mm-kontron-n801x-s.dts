@@ -1,18 +1,26 @@
-// SPDX-License-Identifier: GPL-2.0
+// SPDX-License-Identifier: GPL-2.0+ OR MIT
 /*
  * Copyright (C) 2019 Kontron Electronics GmbH
  */
 
+/dts-v1/;
+
+#include "imx8mm-kontron-n801x-som.dtsi"
+
 / {
+	model = "Kontron i.MX8MM N801X S";
+	compatible = "kontron,imx8mm-n801x-s", "kontron,imx8mm-n801x-som", "fsl,imx8mm";
+
 	aliases {
 		ethernet1 = &usbnet;
 	};
 
 	/* fixed crystal dedicated to mcp2515 */
-	clk16m: clk16m {
+	osc_can: clock-osc-can {
 		compatible = "fixed-clock";
 		#clock-cells = <0>;
 		clock-frequency = <16000000>;
+		clock-output-names = "osc-can";
 	};
 
 	leds {
@@ -68,7 +76,7 @@
 		status = "okay";
 	};
 
-	vdd_24v: regulator-24v {
+	reg_vdd_24v: regulator-24v {
 		compatible = "regulator-fixed";
 		regulator-name = "vdd_24v";
 		regulator-min-microvolt = <24000000>;
@@ -77,9 +85,9 @@
 		status = "okay";
 	};
 
-	vdd_5v: regulator-5v {
+	reg_vdd_5v: regulator-5v {
 		compatible = "regulator-fixed";
-		regulator-name = "vdd_5v";
+		regulator-name = "vdd-5v";
 		regulator-min-microvolt = <5000000>;
 		regulator-max-microvolt = <5000000>;
 		regulator-always-on;
@@ -130,12 +138,12 @@
 		reg = <0>;
 		pinctrl-names = "default";
 		pinctrl-0 = <&pinctrl_can>;
-		clocks = <&clk16m>;
+		clocks = <&osc_can>;
 		interrupt-parent = <&gpio4>;
 		interrupts = <28 IRQ_TYPE_EDGE_FALLING>;
 		spi-max-frequency = <100000>;
-		vdd-supply = <&vdd_3v3>;
-		xceiver-supply = <&vdd_5v>;
+		vdd-supply = <&reg_vdd_3v3>;
+		xceiver-supply = <&reg_vdd_5v>;
 		status = "okay";
 	};
 };
@@ -198,9 +206,9 @@
 
 		adi,dsi-lanes = <2>;
 
-		avdd-supply = <&vdd_1v8>;
-		v1p2-supply = <&vdd_1v8>;
-		v3p3-supply = <&vdd_3v3>;
+		avdd-supply = <&reg_vdd_1v8>;
+		v1p2-supply = <&reg_vdd_1v8>;
+		v3p3-supply = <&reg_vdd_3v3>;
 
 		ports {
 			#address-cells = <1>;
@@ -315,8 +323,8 @@
 &usdhc2 {
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_usdhc2>;
-	vmmc-supply = <&vdd_3v3>;
-	vqmmc-supply = <&vdd_1v8>;
+	vmmc-supply = <&reg_vdd_3v3>;
+	vqmmc-supply = <&reg_nvcc_sd>;
 	cd-gpios = <&gpio2 12 GPIO_ACTIVE_LOW>;
 	bus-width = <4>;
 	status = "okay";

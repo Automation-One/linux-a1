@@ -3,16 +3,16 @@
  * Copyright (C) 2019 Kontron Electronics GmbH
  */
 
-#include "imx8mm-kontron-n8010-s.dts"
+#include "imx8mm-kontron-n801x-s.dts"
 
 / {
-	model = "Kontron i.MX8MM N8010 S LVDS";
-	compatible = "kontron,imx8mm-n8010-s-lvds", "fsl,imx8mm";
+	model = "Kontron i.MX8MM N801X S LVDS";
+	compatible = "kontron,imx8mm-n801x-s-lvds", "fsl,imx8mm";
 
 	backlight: backlight {
 		compatible = "pwm-backlight";
 		pwms = <&pwm1 0 50000>; /* period = 5000000 ns => f = 200 Hz */
-		power-supply = <&vdd_24v>;
+		power-supply = <&reg_vdd_24v>;
 		brightness-levels = <0 100>;
 		num-interpolated-steps = <100>;
 		default-brightness-level = <100>;
