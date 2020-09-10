@@ -179,11 +179,10 @@ static int buck_set_dvs(const struct regulator_desc *desc,
 	uint32_t uv;
 
 	ret = of_property_read_u32(np, prop, &uv);
-	if (ret) {
-		if (ret != -EINVAL)
-			return ret;
+	if (ret == -EINVAL)
 		return 0;
-	}
+	else if (ret)
+		return ret;
 
 	for (i = 0; i < desc->n_voltages; i++) {
 		ret = regulator_desc_list_voltage_linear_range(desc, i);
@@ -308,24 +307,6 @@ static const struct pca9450_regulator_desc pca9450a_regulators[] = {
 			.run_mask = BUCK3OUT_DVS0_MASK,
 			.standby_reg = PCA9450_REG_BUCK3OUT_DVS1,
 			.standby_mask = BUCK3OUT_DVS1_MASK,
-		},
-	},
-	{
-		.desc = {
-			.name = "buck4",
-			.of_match = of_match_ptr("BUCK4"),
-			.regulators_node = of_match_ptr("regulators"),
-			.id = PCA9450_BUCK4,
-			.ops = &pca9450_buck_regulator_ops,
-			.type = REGULATOR_VOLTAGE,
-			.n_voltages = PCA9450_BUCK4_VOLTAGE_NUM,
-			.linear_ranges = pca9450_buck_volts,
-			.n_linear_ranges = ARRAY_SIZE(pca9450_buck_volts),
-			.vsel_reg = PCA9450_REG_BUCK4OUT,
-			.vsel_mask = BUCK4OUT_MASK,
-			.enable_reg = PCA9450_REG_BUCK4CTRL,
-			.enable_mask = BUCK4_ENMODE_MASK,
-			.owner = THIS_MODULE,
 		},
 	},
 	{
@@ -475,7 +456,7 @@ static const struct pca9450_regulator_desc pca9450a_regulators[] = {
 };
 
 /*
- * Buck3 removed on PCA9450B and conneced with Buck1 internal for dual phase
+ * Buck3 removed on PCA9450B and connected with Buck1 internal for dual phase
  * on PCA9450C as no Buck3.
  */
 static const struct pca9450_regulator_desc pca9450bc_regulators[] = {
@@ -813,6 +794,9 @@ static int pca9450_i2c_probe(struct i2c_client *i2c,
 		dev_err(&i2c->dev, "Unmask irq error\n");
 		return ret;
 	}
+
+	dev_info(&i2c->dev, "%s probed.\n",
+		type == PCA9450_TYPE_PCA9450A ? "pca9450a" : "pca9450bc");
 
 	return 0;
 }
