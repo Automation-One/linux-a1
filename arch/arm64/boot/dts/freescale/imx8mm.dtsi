@@ -1103,17 +1103,19 @@
 			reg = <0x38000000 0x8000>;
 			interrupts = <GIC_SPI 3 IRQ_TYPE_LEVEL_HIGH>;
 			clocks = <&clk IMX8MM_CLK_GPU_AHB>,
-				 <&clk IMX8MM_CLK_GPU_BUS_ROOT>,
-				 <&clk IMX8MM_CLK_GPU3D_ROOT>;
-			clock-names = "reg", "bus", "core";
+			         <&clk IMX8MM_CLK_GPU_BUS_ROOT>,
+			         <&clk IMX8MM_CLK_GPU3D_ROOT>,
+			         <&clk IMX8MM_CLK_GPU3D_ROOT>;
+			clock-names = "reg", "bus", "core", "shader";
 			assigned-clocks = <&clk IMX8MM_CLK_GPU3D_SRC>,
-					<&clk IMX8MM_CLK_GPU_AXI>,
-					<&clk IMX8MM_CLK_GPU_AHB>,
-					<&clk IMX8MM_GPU_PLL_OUT>;
+			                  <&clk IMX8MM_CLK_GPU_AXI>,
+			                  <&clk IMX8MM_CLK_GPU_AHB>,
+			                  <&clk IMX8MM_GPU_PLL_OUT>;
 			assigned-clock-parents = <&clk IMX8MM_GPU_PLL_OUT>,
-					<&clk IMX8MM_SYS_PLL1_800M>,
-					<&clk IMX8MM_SYS_PLL1_800M>;
+			                         <&clk IMX8MM_SYS_PLL1_800M>,
+			                         <&clk IMX8MM_SYS_PLL1_800M>;
 			assigned-clock-rates = <0>, <0>,<400000000>,<1000000000>;
+			power-domains = <&pgc_gpu>;
 		};
 
 		gpu_2d: gpu@38008000 {
@@ -1121,17 +1123,18 @@
 			reg = <0x38008000 0x8000>;
 			interrupts = <GIC_SPI 25 IRQ_TYPE_LEVEL_HIGH>;
 			clocks = <&clk IMX8MM_CLK_GPU_AHB>,
-				 <&clk IMX8MM_CLK_GPU_BUS_ROOT>,
-				 <&clk IMX8MM_CLK_GPU2D_ROOT>;
+			         <&clk IMX8MM_CLK_GPU_BUS_ROOT>,
+			         <&clk IMX8MM_CLK_GPU2D_ROOT>;
 			clock-names = "reg", "bus", "core";
 			assigned-clocks = <&clk IMX8MM_CLK_GPU2D_SRC>,
-					<&clk IMX8MM_CLK_GPU_AXI>,
-					<&clk IMX8MM_CLK_GPU_AHB>,
-					<&clk IMX8MM_GPU_PLL_OUT>;
+			                  <&clk IMX8MM_CLK_GPU_AXI>,
+			                  <&clk IMX8MM_CLK_GPU_AHB>,
+			                  <&clk IMX8MM_GPU_PLL_OUT>;
 			assigned-clock-parents = <&clk IMX8MM_GPU_PLL_OUT>,
-					<&clk IMX8MM_SYS_PLL1_800M>,
-					<&clk IMX8MM_SYS_PLL1_800M>;
+			                         <&clk IMX8MM_SYS_PLL1_800M>,
+			                         <&clk IMX8MM_SYS_PLL1_800M>;
 			assigned-clock-rates = <0>, <0>,<400000000>,<1000000000>;
+			power-domains = <&pgc_gpu>;
 		};
 
 		gic: interrupt-controller@38800000 {
