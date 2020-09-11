@@ -68,6 +68,9 @@
 
 #define GPC_PU_PWRHSK			0x1fc
 
+#define IMX8M_GPU_HSK_PWRDNACKN			BIT(26)
+#define IMX8M_VPU_HSK_PWRDNACKN			BIT(25)
+#define IMX8M_DISP_HSK_PWRDNACKN		BIT(24)
 #define IMX8M_GPU_HSK_PWRDNREQN			BIT(6)
 #define IMX8M_VPU_HSK_PWRDNREQN			BIT(5)
 #define IMX8M_DISP_HSK_PWRDNREQN		BIT(4)
@@ -113,7 +116,8 @@ struct imx_pgc_domain {
 	const struct {
 		u32 pxx;
 		u32 map;
-		u32 hsk;
+		u32 hskreq;
+		u32 hskack;
 	} bits;
 
 	const int voltage;
@@ -175,9 +179,19 @@ static int imx_pgc_power_up(struct generic_pm_domain *genpd)
 			   GPC_PGC_CTRL_PCR, 0);
 
 	/* request the ADB400 to power up */
-	if (domain->bits.hsk)
+	if (domain->bits.hskreq) {
 		regmap_update_bits(domain->regmap, GPC_PU_PWRHSK,
-				   domain->bits.hsk, domain->bits.hsk);
+				   domain->bits.hskreq, domain->bits.hskreq);
+
+		ret = regmap_read_poll_timeout(domain->regmap, GPC_PU_PWRHSK,
+					       reg_val,
+					       (reg_val & domain->bits.hskack),
+					       0, USEC_PER_MSEC);
+		if (ret) {
+			dev_err(domain->dev, "failed to power up ADB400\n");
+			goto out_clk_disable;
+		}
+	}
 
 	/* Disable reset clocks for all devices in the domain */
 	for (i = 0; i < domain->num_clks; i++)
@@ -210,9 +224,19 @@ static int imx_pgc_power_down(struct generic_pm_domain *genpd)
 	}
 
 	/* request the ADB400 to power down */
-	if (domain->bits.hsk)
+	if (domain->bits.hskreq) {
 		regmap_update_bits(domain->regmap, GPC_PU_PWRHSK,
-				   domain->bits.hsk, 0);
+				   domain->bits.hskreq, 0);
+
+		ret = regmap_read_poll_timeout(domain->regmap, GPC_PU_PWRHSK,
+					       reg_val,
+					       !(reg_val & domain->bits.hskack),
+					       0, USEC_PER_MSEC);
+		if (ret) {
+			dev_err(domain->dev, "failed to power down ADB400\n");
+			goto out_clk_disable;
+		}
+	}
 
 	/* enable power control */
 	regmap_update_bits(domain->regmap, GPC_PGC_CTRL(domain->pgc),
@@ -377,7 +401,8 @@ static const struct imx_pgc_domain imx8m_pgc_domains[] = {
 		.bits  = {
 			.pxx = IMX8M_GPU_SW_Pxx_REQ,
 			.map = IMX8M_GPU_A53_DOMAIN,
-			.hsk = IMX8M_GPU_HSK_PWRDNREQN,
+			.hskreq = IMX8M_GPU_HSK_PWRDNREQN,
+			.hskack = IMX8M_GPU_HSK_PWRDNACKN,
 		},
 		.pgc   = IMX8M_PGC_GPU,
 	},
@@ -389,7 +414,8 @@ static const struct imx_pgc_domain imx8m_pgc_domains[] = {
 		.bits  = {
 			.pxx = IMX8M_VPU_SW_Pxx_REQ,
 			.map = IMX8M_VPU_A53_DOMAIN,
-			.hsk = IMX8M_VPU_HSK_PWRDNREQN,
+			.hskreq = IMX8M_VPU_HSK_PWRDNREQN,
+			.hskack = IMX8M_VPU_HSK_PWRDNACKN,
 		},
 		.pgc   = IMX8M_PGC_VPU,
 	},
@@ -401,7 +427,8 @@ static const struct imx_pgc_domain imx8m_pgc_domains[] = {
 		.bits  = {
 			.pxx = IMX8M_DISP_SW_Pxx_REQ,
 			.map = IMX8M_DISP_A53_DOMAIN,
-			.hsk = IMX8M_DISP_HSK_PWRDNREQN,
+			.hskreq = IMX8M_DISP_HSK_PWRDNREQN,
+			.hskack = IMX8M_DISP_HSK_PWRDNACKN,
 		},
 		.pgc   = IMX8M_PGC_DISP,
 	},
