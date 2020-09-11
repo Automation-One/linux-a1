@@ -12,6 +12,7 @@
 #include <linux/of_device.h>
 #include <linux/platform_device.h>
 #include <linux/pm_domain.h>
+#include <linux/pm_runtime.h>
 #include <linux/regmap.h>
 #include <linux/regulator/consumer.h>
 #include <dt-bindings/power/imx7-power.h>
@@ -142,11 +143,17 @@ static int imx_pgc_power_up(struct generic_pm_domain *genpd)
 	u32 reg_val;
 	int i, ret;
 
+	ret = pm_runtime_get_sync(domain->dev);
+	if (ret) {
+		pm_runtime_put_noidle(domain->dev);
+		return ret;
+	}
+
 	if (!IS_ERR(domain->regulator)) {
 		ret = regulator_enable(domain->regulator);
 		if (ret) {
 			dev_err(domain->dev, "failed to enable regulator\n");
-			return ret;
+			goto out_put_pm;
 		}
 	}
 
@@ -204,6 +211,8 @@ out_clk_disable:
 		clk_disable_unprepare(domain->clk[i]);
 	if (!IS_ERR(domain->regulator))
 		regulator_disable(domain->regulator);
+out_put_pm:
+	pm_runtime_put(domain->dev);
 
 	return ret;
 }
@@ -268,6 +277,8 @@ static int imx_pgc_power_down(struct generic_pm_domain *genpd)
 			return ret;
 		}
 	}
+
+	pm_runtime_put(domain->dev);
 
 	return 0;
 
@@ -566,6 +577,8 @@ static int imx_pgc_domain_probe(struct platform_device *pdev)
 		return ret;
 	}
 
+	pm_runtime_enable(domain->dev);
+
 	regmap_update_bits(domain->regmap, GPC_PGC_CPU_MAPPING,
 			   domain->bits.map, domain->bits.map);
 
@@ -589,6 +602,7 @@ out_genpd_remove:
 out_domain_unmap:
 	regmap_update_bits(domain->regmap, GPC_PGC_CPU_MAPPING,
 			   domain->bits.map, 0);
+	pm_runtime_disable(domain->dev);
 	imx_pgc_put_clocks(domain);
 
 	return ret;
@@ -603,6 +617,8 @@ static int imx_pgc_domain_remove(struct platform_device *pdev)
 
 	regmap_update_bits(domain->regmap, GPC_PGC_CPU_MAPPING,
 			   domain->bits.map, 0);
+
+	pm_runtime_disable(domain->dev);
 
 	imx_pgc_put_clocks(domain);
 
