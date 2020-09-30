@@ -53,18 +53,6 @@
 	};
 };
 
-/*
- * Enabling the GPUs with the current kernel version causes some
- * boards to hang when intitalizing the clocks. Disable them for now.
- */
-&gpu_2d {
-	status = "disabled";
-};
-
-&gpu_3d {
-	status = "disabled";
-};
-
 &i2c1 {
 	clock-frequency = <400000>;
 	pinctrl-names = "default";
