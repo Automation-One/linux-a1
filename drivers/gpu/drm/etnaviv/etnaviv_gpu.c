@@ -1448,10 +1448,22 @@ static int etnaviv_gpu_clk_enable(struct etnaviv_gpu *gpu)
 {
 	int ret;
 
+	if (gpu->clk_reg) {
+		ret = clk_prepare_enable(gpu->clk_reg);
+		if (ret)
+			return ret;
+	}
+
+	if (gpu->clk_bus) {
+		ret = clk_prepare_enable(gpu->clk_bus);
+		if (ret)
+			return ret;
+	}
+
 	if (gpu->clk_core) {
 		ret = clk_prepare_enable(gpu->clk_core);
 		if (ret)
-			return ret;
+			goto disable_clk_bus;
 	}
 
 	if (gpu->clk_shader) {
@@ -1460,29 +1472,14 @@ static int etnaviv_gpu_clk_enable(struct etnaviv_gpu *gpu)
 			goto disable_clk_core;
 	}
 
-	if (gpu->clk_bus) {
-		ret = clk_prepare_enable(gpu->clk_bus);
-		if (ret)
-			goto disable_clk_shader;
-	}
-
-	if (gpu->clk_reg) {
-		ret = clk_prepare_enable(gpu->clk_reg);
-		if (ret)
-			goto disable_clk_bus;
-	}
-
 	return 0;
 
-disable_clk_bus:
-	if (gpu->clk_bus)
-		clk_disable_unprepare(gpu->clk_bus);
-disable_clk_shader:
-	if (gpu->clk_shader)
-		clk_disable_unprepare(gpu->clk_shader);
 disable_clk_core:
 	if (gpu->clk_core)
 		clk_disable_unprepare(gpu->clk_core);
+disable_clk_bus:
+	if (gpu->clk_bus)
+		clk_disable_unprepare(gpu->clk_bus);
 
 	return ret;
 }
