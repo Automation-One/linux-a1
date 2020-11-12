@@ -75,8 +75,7 @@
 };
 
 &reg_dsi_sel {
-	regulator-boot-on;
-	regulator-always-on;
+	/delete-property/ enable-active-high;
 };
 
 &hdmi {

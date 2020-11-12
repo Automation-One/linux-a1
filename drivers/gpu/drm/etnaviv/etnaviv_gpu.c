@@ -713,7 +713,7 @@ int etnaviv_gpu_init(struct etnaviv_gpu *gpu)
 	ret = pm_runtime_get_sync(gpu->dev);
 	if (ret < 0) {
 		dev_err(gpu->dev, "Failed to enable GPU power domain\n");
-		return ret;
+		goto pm_put;
 	}
 
 	etnaviv_hw_identify(gpu);
@@ -802,6 +802,7 @@ int etnaviv_gpu_init(struct etnaviv_gpu *gpu)
 
 fail:
 	pm_runtime_mark_last_busy(gpu->dev);
+pm_put:
 	pm_runtime_put_autosuspend(gpu->dev);
 
 	return ret;
@@ -842,7 +843,7 @@ int etnaviv_gpu_debugfs(struct etnaviv_gpu *gpu, struct seq_file *m)
 
 	ret = pm_runtime_get_sync(gpu->dev);
 	if (ret < 0)
-		return ret;
+		goto pm_put;
 
 	dma_lo = gpu_read(gpu, VIVS_FE_DMA_LOW);
 	dma_hi = gpu_read(gpu, VIVS_FE_DMA_HIGH);
@@ -965,6 +966,7 @@ int etnaviv_gpu_debugfs(struct etnaviv_gpu *gpu, struct seq_file *m)
 	ret = 0;
 
 	pm_runtime_mark_last_busy(gpu->dev);
+pm_put:
 	pm_runtime_put_autosuspend(gpu->dev);
 
 	return ret;
@@ -978,7 +980,7 @@ void etnaviv_gpu_recover_hang(struct etnaviv_gpu *gpu)
 	dev_err(gpu->dev, "recover hung GPU!\n");
 
 	if (pm_runtime_get_sync(gpu->dev) < 0)
-		return;
+		goto pm_put;
 
 	mutex_lock(&gpu->lock);
 
@@ -997,6 +999,7 @@ void etnaviv_gpu_recover_hang(struct etnaviv_gpu *gpu)
 
 	mutex_unlock(&gpu->lock);
 	pm_runtime_mark_last_busy(gpu->dev);
+pm_put:
 	pm_runtime_put_autosuspend(gpu->dev);
 }
 
@@ -1269,8 +1272,10 @@ struct dma_fence *etnaviv_gpu_submit(struct etnaviv_gem_submit *submit)
 
 	if (!submit->runtime_resumed) {
 		ret = pm_runtime_get_sync(gpu->dev);
-		if (ret < 0)
+		if (ret < 0) {
+			pm_runtime_put_noidle(gpu->dev);
 			return NULL;
+		}
 		submit->runtime_resumed = true;
 	}
 
@@ -1287,6 +1292,7 @@ struct dma_fence *etnaviv_gpu_submit(struct etnaviv_gem_submit *submit)
 	ret = event_alloc(gpu, nr_events, event);
 	if (ret) {
 		DRM_ERROR("no free events\n");
+		pm_runtime_put_noidle(gpu->dev);
 		return NULL;
 	}
 
@@ -1448,10 +1454,22 @@ static int etnaviv_gpu_clk_enable(struct etnaviv_gpu *gpu)
 {
 	int ret;
 
+	if (gpu->clk_reg) {
+		ret = clk_prepare_enable(gpu->clk_reg);
+		if (ret)
+			return ret;
+	}
+
+	if (gpu->clk_bus) {
+		ret = clk_prepare_enable(gpu->clk_bus);
+		if (ret)
+			goto disable_clk_reg;
+	}
+
 	if (gpu->clk_core) {
 		ret = clk_prepare_enable(gpu->clk_core);
 		if (ret)
-			return ret;
+			goto disable_clk_bus;
 	}
 
 	if (gpu->clk_shader) {
@@ -1460,29 +1478,17 @@ static int etnaviv_gpu_clk_enable(struct etnaviv_gpu *gpu)
 			goto disable_clk_core;
 	}
 
-	if (gpu->clk_bus) {
-		ret = clk_prepare_enable(gpu->clk_bus);
-		if (ret)
-			goto disable_clk_shader;
-	}
-
-	if (gpu->clk_reg) {
-		ret = clk_prepare_enable(gpu->clk_reg);
-		if (ret)
-			goto disable_clk_bus;
-	}
-
 	return 0;
 
-disable_clk_bus:
-	if (gpu->clk_bus)
-		clk_disable_unprepare(gpu->clk_bus);
-disable_clk_shader:
-	if (gpu->clk_shader)
-		clk_disable_unprepare(gpu->clk_shader);
 disable_clk_core:
 	if (gpu->clk_core)
 		clk_disable_unprepare(gpu->clk_core);
+disable_clk_bus:
+	if (gpu->clk_bus)
+		clk_disable_unprepare(gpu->clk_bus);
+disable_clk_reg:
+	if (gpu->clk_reg)
+		clk_disable_unprepare(gpu->clk_reg);
 
 	return ret;
 }
@@ -1732,6 +1738,20 @@ static int etnaviv_gpu_platform_probe(struct platform_device *pdev)
 	if (IS_ERR(gpu->mmio))
 		return PTR_ERR(gpu->mmio);
 
+	/* Get Interrupt: */
+	gpu->irq = platform_get_irq(pdev, 0);
+	if (gpu->irq < 0) {
+		dev_err(dev, "failed to get irq: %d\n", gpu->irq);
+		return gpu->irq;
+	}
+
+	err = devm_request_irq(&pdev->dev, gpu->irq, irq_handler, 0,
+			       dev_name(gpu->dev), gpu);
+	if (err) {
+		dev_err(dev, "failed to request IRQ%u: %d\n", gpu->irq, err);
+		return err;
+	}
+
 	/* Get Clocks: */
 	gpu->clk_reg = devm_clk_get(&pdev->dev, "reg");
 	DBG("clk_reg: %p", gpu->clk_reg);
@@ -1754,28 +1774,6 @@ static int etnaviv_gpu_platform_probe(struct platform_device *pdev)
 	if (IS_ERR(gpu->clk_shader))
 		gpu->clk_shader = NULL;
 	gpu->base_rate_shader = clk_get_rate(gpu->clk_shader);
-
-	err = etnaviv_gpu_clk_enable(gpu);
-	if (err)
-		return err;
-
-	/* Get Interrupt: */
-	gpu->irq = platform_get_irq(pdev, 0);
-	if (gpu->irq < 0) {
-		dev_err(dev, "failed to get irq: %d\n", gpu->irq);
-		return gpu->irq;
-	}
-
-	err = devm_request_irq(&pdev->dev, gpu->irq, irq_handler, 0,
-			       dev_name(gpu->dev), gpu);
-	if (err) {
-		dev_err(dev, "failed to request IRQ%u: %d\n", gpu->irq, err);
-		return err;
-	}
-
-	err = etnaviv_gpu_clk_disable(gpu);
-	if (err)
-		return err;
 
 	/* TODO: figure out max mapped size */
 	dev_set_drvdata(dev, gpu);
