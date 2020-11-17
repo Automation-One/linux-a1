@@ -1,0 +1,31 @@
+// SPDX-License-Identifier: GPL-2.0
+/*
+ * Copyright (C) 2017 exceet electronics GmbH
+ * Copyright (C) 2019 Kontron Electronics GmbH
+ */
+
+/dts-v1/;
+
+#include "imx6ull-kontron-n6411-som.dtsi"
+#include "imx6ul-kontron-n6x1x-s.dtsi"
+
+/ {
+	model = "Automation-One Gateway";
+	compatible = "automation-one,imx6ull-gw", "kontron,imx6ull-n6411-s",
+		     "kontron,imx6ull-n6411-som", "fsl,imx6ull";
+
+	/delete-node/ gpio-leds;
+};
+
+&uart3 {
+      pinctrl-names = "default";
+      pinctrl-0 = <&pinctrl_uart3>;
+      linux,rs485-enabled-at-boot-time;
+      rs485-rx-during-tx;
+      uart-has-rtscts;
+      status = "okay";
+};
+
+&usbotg1 {
+	dr_mode = "host";
+};
