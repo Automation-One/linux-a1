@@ -512,8 +512,34 @@ static void panel_simple_shutdown(struct device *dev)
 	panel_simple_unprepare(&panel->base);
 }
 
+static const struct drm_display_mode admatec_5_inch_mode = {
+	.clock = 33000,
+	.hdisplay = 800,
+	.hsync_start = 800 + 208,
+	.hsync_end =  800  + 208 + 2,
+	.htotal = 800 + 46 + 208 + 2,
+	.vdisplay = 480,
+	.vsync_start = 480 + 23,
+	.vsync_end = 480 + 23 + 1,
+	.vtotal = 480 + 22 + 23 + 1,
+	.vrefresh = 60,
+	.flags = DRM_MODE_FLAG_NHSYNC | DRM_MODE_FLAG_NVSYNC,
+};
+
+static const struct panel_desc admatec_5_inch = {
+	.modes = &admatec_5_inch_mode,
+	.num_modes = 1,
+	.bpc = 8,
+	.size = {
+		.width = 109,
+		.height = 66,
+	},
+	.bus_format = MEDIA_BUS_FMT_RGB888_1X24,
+	.bus_flags = DRM_BUS_FLAG_DE_HIGH | DRM_BUS_FLAG_PIXDATA_POSEDGE,
+};
+
 static const struct drm_display_mode admatec_t070p133t0s301_mode = {
-	.clock = 37000,
+	.clock = 36000,
 	.hdisplay = 800,
 	.hsync_start = 800 + 327,
 	.hsync_end =  800  + 327 + 1,
@@ -523,7 +549,7 @@ static const struct drm_display_mode admatec_t070p133t0s301_mode = {
 	.vsync_end = 480 + 25 + 1,
 	.vtotal = 480 + 20 + 25 + 1,
 	.vrefresh = 60,
-	.flags = DRM_MODE_FLAG_PHSYNC | DRM_MODE_FLAG_PVSYNC,
+	.flags = DRM_MODE_FLAG_NHSYNC | DRM_MODE_FLAG_NVSYNC,
 };
 
 static const struct panel_desc admatec_t070p133t0s301 = {
@@ -3161,6 +3187,9 @@ static const struct panel_desc arm_rtsm = {
 
 static const struct of_device_id platform_of_match[] = {
 	{
+		.compatible = "admatec,5-inch",
+		.data = &admatec_5_inch,
+	},{
 		.compatible = "admatec,t070p133t0s301",
 		.data = &admatec_t070p133t0s301,
 	}, {
