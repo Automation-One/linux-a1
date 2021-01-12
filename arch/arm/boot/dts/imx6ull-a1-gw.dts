@@ -15,6 +15,11 @@
 		     "kontron,imx6ull-n6411-som", "fsl,imx6ull";
 
 	/delete-node/ gpio-leds;
+
+	usdhc2_pwrseq: usdhc2_pwrseq {
+		compatible = "mmc-pwrseq-simple";
+		reset-gpios = <&gpio4 10 GPIO_ACTIVE_LOW>;
+	};
 };
 
 &uart3 {
@@ -24,6 +29,22 @@
       rs485-rx-during-tx;
       uart-has-rtscts;
       status = "okay";
+};
+
+&usdhc2 {
+	pinctrl-names = "default", "state_100mhz", "state_200mhz";
+	pinctrl-0 = <&pinctrl_usdhc2>;
+	pinctrl-1 = <&pinctrl_usdhc2_100mhz>;
+	pinctrl-2 = <&pinctrl_usdhc2_200mhz>;
+	bus-width = <4>;
+	non-removable;
+	keep-power-in-suspend;
+	wakeup-source;
+	vmmc-supply = <&reg_3v3>;
+	voltage-ranges = <3300 3300>;
+	no-1-8-v;
+	mmc-pwrseq = <&usdhc2_pwrseq>;
+	status = "okay";
 };
 
 &usbotg1 {
