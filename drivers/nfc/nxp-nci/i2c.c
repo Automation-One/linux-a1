@@ -206,6 +206,9 @@ static irqreturn_t nxp_nci_i2c_irq_thread_fn(int irq, void *phy_id)
 	if (phy->hard_fault != 0)
 		goto exit_irq_handled;
 
+	/* report the wakeup event */
+	pm_wakeup_dev_event(&client->dev, 0, false);
+
 	switch (info->mode) {
 	case NXP_NCI_MODE_NCI:
 		r = nxp_nci_i2c_nci_read(phy, &skb);
