@@ -100,7 +100,7 @@ static void tc358x67_dsi_dpi_pre_enable(struct drm_bridge *bridge)
 {
 	struct tc358x67_dsi_dpi *ctx = bridge_to_tc358x67_dsi_dpi(bridge);
 
-	tc358x67_dsi_dpi_i2c_write(ctx->client, POCTRL, 0x88);
+	tc358x67_dsi_dpi_i2c_write(ctx->client, POCTRL, 0x80);
 	tc358x67_dsi_dpi_i2c_write(ctx->client, SYS_PLLPARAM, 0x00000300);
 	tc358x67_dsi_dpi_i2c_write(ctx->client, PXL_PLLPARAM, 0x0015010C);
 
