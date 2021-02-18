@@ -6,6 +6,7 @@
 /dts-v1/;
 
 #include "imx8mm-kontron-n801x-som.dtsi"
+#include <dt-bindings/net/mscc-phy-vsc8531.h>
 
 / {
 	model = "Kontron i.MX8MM N801X S";
@@ -173,10 +174,14 @@
 		#size-cells = <0>;
 
 		ethphy: ethernet-phy@0 {
+			compatible = "ethernet-phy-id0007.0570";
 			reg = <0>;
 			reset-assert-us = <100>;
 			reset-deassert-us = <100>;
 			reset-gpios = <&gpio4 27 GPIO_ACTIVE_LOW>;
+			vsc8531,led-0-mode = <VSC8531_LINK_100_1000_ACTIVITY>;
+			vsc8531,led-1-mode = <VSC8531_LINK_ACTIVITY>;
+			vsc8531,led-0-combine-disable;
 		};
 	};
 };
