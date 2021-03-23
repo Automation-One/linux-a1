@@ -12,6 +12,8 @@
 #include <linux/of.h>
 #include <linux/of_address.h>
 #include <linux/platform_device.h>
+#include <linux/regmap.h>
+#include <linux/mfd/syscon.h>
 #include <linux/types.h>
 
 #include "clk.h"
@@ -365,6 +367,15 @@ static struct clk ** const uart_clks[] __initconst = {
 	NULL
 };
 
+static void __init imx8mm_clocks_enet_refclk(void)
+{
+	struct regmap *gpr = syscon_regmap_lookup_by_compatible("fsl,imx8mm-iomuxc-gpr");
+	if (!IS_ERR(gpr))
+		regmap_update_bits(gpr, 0x04, (1 << 13), (1 << 13));
+	else
+		pr_err("failed to find fsl,imx8mm-iomuxc-gpr regmap\n");
+}
+
 static int __init imx8mm_clocks_init(struct device_node *ccm_node)
 {
 	struct device_node *np;
@@ -650,6 +661,7 @@ static int __init imx8mm_clocks_init(struct device_node *ccm_node)
 	}
 
 	imx_register_uart_clocks(uart_clks);
+	imx8mm_clocks_enet_refclk();
 
 	return 0;
 
