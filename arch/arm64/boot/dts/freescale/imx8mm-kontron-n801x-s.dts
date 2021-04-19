@@ -242,12 +242,6 @@
 		pinctrl-names = "default";
 		pinctrl-0 = <&pinctrl_sn65dsi84>;
 		status = "disabled";
-
-		port {
-			sn65dsi84_in: endpoint {
-				remote-endpoint = <&dsi_out>;
-			};
-		};
 	};
 };
 
