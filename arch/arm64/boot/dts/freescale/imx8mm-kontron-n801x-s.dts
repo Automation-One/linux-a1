@@ -6,6 +6,7 @@
 /dts-v1/;
 
 #include "imx8mm-kontron-n801x-som.dtsi"
+#include <dt-bindings/net/mscc-phy-vsc8531.h>
 
 / {
 	model = "Kontron i.MX8MM N801X S";
@@ -141,7 +142,7 @@
 		clocks = <&osc_can>;
 		interrupt-parent = <&gpio4>;
 		interrupts = <28 IRQ_TYPE_EDGE_FALLING>;
-		spi-max-frequency = <100000>;
+		spi-max-frequency = <10000000>;
 		vdd-supply = <&reg_vdd_3v3>;
 		xceiver-supply = <&reg_vdd_5v>;
 	};
@@ -173,10 +174,14 @@
 		#size-cells = <0>;
 
 		ethphy: ethernet-phy@0 {
+			compatible = "ethernet-phy-id0007.0570";
 			reg = <0>;
 			reset-assert-us = <100>;
 			reset-deassert-us = <100>;
 			reset-gpios = <&gpio4 27 GPIO_ACTIVE_LOW>;
+			vsc8531,led-0-mode = <VSC8531_LINK_100_1000_ACTIVITY>;
+			vsc8531,led-1-mode = <VSC8531_LINK_ACTIVITY>;
+			vsc8531,led-0-combine-disable;
 		};
 	};
 };
@@ -237,12 +242,6 @@
 		pinctrl-names = "default";
 		pinctrl-0 = <&pinctrl_sn65dsi84>;
 		status = "disabled";
-
-		port {
-			sn65dsi84_in: endpoint {
-				remote-endpoint = <&dsi_out>;
-			};
-		};
 	};
 };
 
@@ -266,6 +265,8 @@
 	status = "okay";
 
 	port@1 {
+		reg = <1>;
+
 		dsi_out: endpoint {
 			remote-endpoint = <&adv7533_in>;
 		};

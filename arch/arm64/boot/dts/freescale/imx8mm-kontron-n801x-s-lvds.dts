@@ -89,6 +89,12 @@
 	ti,height-mm = <86>;
 	status = "okay";
 
+	port {
+		sn65dsi84_in: endpoint {
+			remote-endpoint = <&dsi_out>;
+		};
+	};
+
 	display-timings {
 		lvds {
 			clock-frequency = <51200000>;

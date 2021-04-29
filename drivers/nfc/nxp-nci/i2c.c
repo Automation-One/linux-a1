@@ -206,6 +206,9 @@ static irqreturn_t nxp_nci_i2c_irq_thread_fn(int irq, void *phy_id)
 	if (phy->hard_fault != 0)
 		goto exit_irq_handled;
 
+	/* report the wakeup event */
+	pm_wakeup_dev_event(&client->dev, 0, false);
+
 	switch (info->mode) {
 	case NXP_NCI_MODE_NCI:
 		r = nxp_nci_i2c_nci_read(phy, &skb);
@@ -286,7 +289,7 @@ static int nxp_nci_i2c_probe(struct i2c_client *client,
 		return PTR_ERR(phy->gpiod_en);
 	}
 
-	phy->gpiod_fw = devm_gpiod_get(dev, "firmware", GPIOD_OUT_LOW);
+	phy->gpiod_fw = devm_gpiod_get_optional(dev, "firmware", GPIOD_OUT_LOW);
 	if (IS_ERR(phy->gpiod_fw)) {
 		nfc_err(dev, "Failed to get FW gpio\n");
 		return PTR_ERR(phy->gpiod_fw);
