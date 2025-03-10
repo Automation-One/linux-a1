@@ -1,3 +1,5 @@
+Please Note that this Repo has been deprecated. For all A1 Images the mainline kernel is used with a patch stack in the yocto meta-a1-platform and extras layers
+
 Linux kernel
 ============
 
